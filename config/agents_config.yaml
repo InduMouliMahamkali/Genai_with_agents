@@ -1,0 +1,7 @@
+agents:
+  - id: common_agent
+    name: CommonAgent
+    description: Handles general questions about the company.
+    module: agents.common_agent
+    class: CommonAgent
+    active: true

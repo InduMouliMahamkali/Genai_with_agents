@@ -1,0 +1,11 @@
+fastapi
+streamlit
+uvicorn
+faiss-cpu
+openai
+sentence-transformers
+pydantic
+#sqlite3  # Note: part of Python stdlib, no need to install
+pyyaml
+sentence-transformers
+faiss-cpu
