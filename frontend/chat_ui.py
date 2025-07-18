@@ -3,8 +3,14 @@
 import streamlit as st
 import requests
 from datetime import datetime
+from feedback.feedback_logger import FeedbackLogger
+
 
 API_URL = "http://localhost:8000/ask"
+
+# Initialize feedback logger
+logger = FeedbackLogger()           
+
 
 # Set up the page
 st.set_page_config(page_title="GenAI Agent", page_icon="🧠")
@@ -52,7 +58,29 @@ if st.button("Send") and user_input and st.session_state.session_id:
     st.session_state.input_box = ""
 
 # Display chat history
-for chat in reversed(st.session_state.chat_history):
+for i, chat in enumerate(reversed(st.session_state.chat_history)):
     st.markdown(f"👤 **You**: {chat['user']}")
     st.markdown(f"🤖 **Agent**: {chat['agent']}")
+    
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button(f"👍 Helpful {i}", key=f"up_{i}"):
+            logger.log_feedback(
+                session_id=st.session_state.session_id,
+                user_input=chat['user'],
+                agent_response=chat['agent'],
+                rating="positive"
+            )
+            st.success("Feedback recorded: 👍")
+    with col2:
+        if st.button(f"👎 Not helpful {i}", key=f"down_{i}"):
+            logger.log_feedback(
+                session_id=st.session_state.session_id,
+                user_input=chat['user'],
+                agent_response=chat['agent'],
+                rating="negative"
+            )
+            st.success("Feedback recorded: 👎")
+
     st.markdown("---")
+
