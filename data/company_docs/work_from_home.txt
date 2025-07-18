@@ -1,0 +1,7 @@
+Work From Home Guidelines
+
+1. Employees can work from home up to 2 days per week.
+2. Prior approval from the team manager is mandatory.
+3. Full-time WFH requests must be routed through HR and approved by Department Heads.
+4. Employees must be reachable during working hours on Teams or Slack.
+5. VPN usage is mandatory for accessing internal tools.

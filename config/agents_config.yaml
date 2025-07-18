@@ -1,7 +1,15 @@
-agents:
-  - id: common_agent
-    name: CommonAgent
-    description: Handles general questions about the company.
-    module: agents.common_agent
-    class: CommonAgent
-    active: true
+#agents:
+ # - id: common_agent
+  #  name: CommonAgent
+   # description: Handles general questions about the company.
+    #module: agents.common_agent
+    #class: CommonAgent
+    #active: true
+    #index_path: "data/faiss_index/common_agent.index"
+    #document_store_path: "data/faiss_index/documents.pkl"
+
+
+common_agent:
+  name: "CommonAgent"
+  index_path: "data/faiss_index/common_agent.index"
+  document_store_path: "data/faiss_index/documents.pkl"

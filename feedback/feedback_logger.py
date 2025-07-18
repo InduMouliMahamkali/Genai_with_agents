@@ -28,4 +28,10 @@ class FeedbackLogger:
             self.conn.execute("""
                 INSERT INTO feedback (session_id, user_input, agent_response, rating, timestamp)
                 VALUES (?, ?, ?, ?, ?)
-            """, (session_id, user_input, agent_response, rating, datetime.utcnow().isoformat()))
+            """, (
+                session_id,
+                user_input,
+                agent_response,
+                rating,
+                datetime.utcnow().isoformat()
+            ))

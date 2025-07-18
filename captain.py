@@ -1,35 +1,39 @@
 # captain.py
 
+from fastapi import FastAPI
+from orchestrator.api import router as orchestrator_router
 from orchestrator.agent_orchestrator import AgentOrchestrator
-import uvicorn
 import yaml
 import os
 
-def load_config(config_path='config/agents_config.yaml'):
-    with open(config_path, 'r') as file:
-        return yaml.safe_load(file)
+# Create the FastAPI app
+app = FastAPI(
+    title="GenAI Agent App",
+    description="Multi-Agent Orchestrator for Enterprise GenAI",
+    version="1.0.0"
+)
 
-def main():
-    print("🧠 Starting GenAI Agent Platform...")
+# Load configuration
+CONFIG_PATH = os.path.join("config", "agents_config.yaml")
+with open(CONFIG_PATH, "r") as f:
+    agent_config = yaml.safe_load(f)
 
-    # Load agent configs
-    config = load_config()
+# Initialize the orchestrator
+orchestrator = AgentOrchestrator(config=agent_config)
 
-    # Initialize orchestrator with config
-    orchestrator = AgentOrchestrator(config=config)
+# Attach orchestrator to router so endpoints have access
+orchestrator_router.orchestrator = orchestrator
 
-    print("✅ Agents Loaded:", [agent['name'] for agent in config['agents']])
-    print("💬 You can now start sending messages via Streamlit UI or API (to be implemented).")
+# Register API endpoints
+app.include_router(orchestrator_router)
 
-    # Placeholder CLI for basic testing (can be replaced later)
-    while True:
-        user_input = input("\nYou: ")
-        if user_input.lower() in ['exit', 'quit']:
-            break
+# Optional root health check route
+@app.get("/")
+def root():
+    return {"message": "Welcome to the GenAI Agent API!"}
 
-        response = orchestrator.handle_input(session_id="demo_session", user_input=user_input)
-        print(f"Agent: {response}")
 
+# ✅ This allows manual execution with: python captain.py
 if __name__ == "__main__":
-    print("🚀 Starting FastAPI GenAI Backend at http://localhost:8000")
-    uvicorn.run("orchestrator.api:app", host="0.0.0.0", port=8000, reload=True)
+    import uvicorn
+    uvicorn.run("captain:app", host="0.0.0.0", port=8000, reload=True)

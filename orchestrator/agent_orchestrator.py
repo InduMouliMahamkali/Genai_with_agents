@@ -1,45 +1,44 @@
 # orchestrator/agent_orchestrator.py
 
-import importlib
-from typing import Dict, Any
 from sessions.session_manager import SessionManager
-
+from agents.common_agent import CommonAgent
+from agents.devops_agent import DevOpsAgent
+from agents.itsm_agent import ITSMAgent
 
 class AgentOrchestrator:
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config):
         self.config = config
-        self.agents = {}
-        self.load_agents()
+        self.session_manager = SessionManager()
+        self.agents = self._initialize_agents()
 
-    def load_agents(self):
-        for agent_cfg in self.config.get('agents', []):
-            if agent_cfg.get("active"):
-                module_path = agent_cfg["module"]
-                class_name = agent_cfg["class"]
-                agent_id = agent_cfg["id"]
+    def _initialize_agents(self):
+        agents = {}
+        for agent_cfg in self.config.get("agents", []):
+            name = agent_cfg["name"]
+            if name == "common_agent":
+                agents[name] = CommonAgent(agent_cfg)
+            elif name == "itsm_agent":
+                agents[name] = ITSMAgent(agent_cfg)
+            elif name == "devops_agent":
+                agents[name] = DevOpsAgent(agent_cfg)
+            else:
+                print(f"⚠️ Unknown agent: {name}")
+        return agents
 
-                try:
-                    module = importlib.import_module(module_path)
-                    agent_class = getattr(module, class_name)
-                    self.agents[agent_id] = agent_class(config=agent_cfg)
-                except Exception as e:
-                    print(f"❌ Error loading {class_name} from {module_path}: {e}")
+    def process(self, session_id: str, user_query: str) -> str:
+        session_context = self.session_manager.get_context(session_id)
 
-    def handle_input(self, session_id: str, user_input: str) -> str:
-        # For now, route everything to the common agent
-        agent = self.agents.get("common_agent")
+        # Basic routing logic based on keywords (can be replaced with intent detection)
+        if "incident" in user_query.lower() or "ticket" in user_query.lower():
+            agent = self.agents.get("itsm_agent")
+        elif "update db" in user_query.lower() or "airflow" in user_query.lower():
+            agent = self.agents.get("devops_agent")
+        else:
+            agent = self.agents.get("common_agent")
+
         if not agent:
-            return "No active agent found."
-        
-        response = agent.respond(session_id=session_id, user_input=user_input)
+            return "❌ No agent configured."
 
-        self.session_manager.log_interaction(
-            session_id=session_id,
-            user_input=user_input,
-            agent_response=response,
-            agent_id="common_agent"
-        )
-
+        response = agent.respond(user_query, session_context)
+        self.session_manager.update_context(session_id, user_query, response)
         return response
-
-        

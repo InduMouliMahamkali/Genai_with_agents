@@ -1,0 +1,10 @@
+venv/
+genai_env/
+.env/
+__pycache__/
+*.py[cod]
+*.pkl
+*.db
+data/faiss_index/
+data/logs/
+data/*.db

@@ -5,17 +5,13 @@ import requests
 from datetime import datetime
 from feedback.feedback_logger import FeedbackLogger
 
-
 API_URL = "http://localhost:8000/ask"
+logger = FeedbackLogger()
 
-# Initialize feedback logger
-logger = FeedbackLogger()           
-
-
-# Set up the page
-st.set_page_config(page_title="GenAI Agent", page_icon="🧠")
-st.title("🧠 GenAI Company Agent")
-st.markdown("Ask me anything about your company policies, onboarding, or HR info.")
+# Set page and title
+st.set_page_config(page_title="GenAI Chat", page_icon="💬")
+st.title("💬 Chat with GenAI Agent")
+st.markdown("Ask HR, onboarding, or general company questions.")
 
 # Session ID input
 if "session_id" not in st.session_state:
@@ -27,14 +23,14 @@ session_id_input = st.sidebar.text_input("Session ID", value=st.session_state.se
 if session_id_input:
     st.session_state.session_id = session_id_input
 
-# Initialize chat history
+# Chat history
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Text box for user input
+# Input field
 user_input = st.text_input("You:", key="input_box")
 
-# On submission
+# Send message
 if st.button("Send") and user_input and st.session_state.session_id:
     payload = {
         "session_id": st.session_state.session_id,
@@ -47,7 +43,7 @@ if st.button("Send") and user_input and st.session_state.session_id:
     except Exception as e:
         agent_reply = f"❌ Error: {e}"
 
-    # Save to chat history
+    # Save to history
     st.session_state.chat_history.append({
         "timestamp": datetime.utcnow().isoformat(),
         "user": user_input,
@@ -55,9 +51,10 @@ if st.button("Send") and user_input and st.session_state.session_id:
     })
 
     # Clear input box
-    st.session_state.input_box = ""
+    #st.session_state.input_box = ""
+    st.rerun()
 
-# Display chat history
+# Display chat with feedback
 for i, chat in enumerate(reversed(st.session_state.chat_history)):
     st.markdown(f"👤 **You**: {chat['user']}")
     st.markdown(f"🤖 **Agent**: {chat['agent']}")
@@ -83,4 +80,3 @@ for i, chat in enumerate(reversed(st.session_state.chat_history)):
             st.success("Feedback recorded: 👎")
 
     st.markdown("---")
-

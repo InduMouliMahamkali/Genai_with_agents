@@ -1,0 +1,8 @@
+Security Guidelines
+
+1. Never share your credentials or OTP with anyone.
+2. Always use company-approved VPN when working remotely.
+3. Report phishing emails to security@company.com.
+4. Use complex passwords and change them every 90 days.
+5. Do not install unauthorized software on your laptop.
+6. Follow all instructions from the InfoSec team during audits or drills.

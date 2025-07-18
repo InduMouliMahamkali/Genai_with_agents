@@ -1,0 +1,12 @@
+# Ignore virtual environments
+venv/
+genai_env/
+.env/
+__pycache__/
+*.py[cod]
+*.pkl
+*.db
+*.log
+*.csv
+data/faiss_index/
+data/logs/

@@ -1,0 +1,12 @@
+#version: '3.8'
+
+services:
+  genai_app:
+    build: .                      # Build from local Dockerfile
+    ports:
+      - "8000:8000"               # Backend API
+      - "8501:8501"               # Streamlit UI
+    volumes:
+      - .:/app                    # Mount current code folder inside container
+    environment:
+      - PYTHONPATH=/app           # Set import root path

@@ -1,28 +1,24 @@
 # orchestrator/api.py
 
-from fastapi import FastAPI, Request
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from orchestrator.agent_orchestrator import AgentOrchestrator
-import yaml
 
-# ---------- Load Config ----------
-with open("config/agents_config.yaml", "r") as f:
-    config = yaml.safe_load(f)
+router = APIRouter()
 
-# ---------- Init Orchestrator ----------
-orchestrator = AgentOrchestrator(config)
+# This will be set by captain.py
+orchestrator: AgentOrchestrator = None
 
-# ---------- FastAPI App ----------
-app = FastAPI(title="GenAI Agent API")
-
-class AskRequest(BaseModel):
+class QueryInput(BaseModel):
     session_id: str
-    user_input: str
+    user_query: str
 
-@app.post("/ask")
-async def ask_agent(request: AskRequest):
-    response = orchestrator.handle_input(
-        session_id=request.session_id,
-        user_input=request.user_input
-    )
-    return {"response": response}
+@router.post("/query")
+async def handle_query(input_data: QueryInput):
+    if orchestrator is None:
+        raise HTTPException(status_code=500, detail="Orchestrator not initialized.")
+    try:
+        response = orchestrator.process(input_data.session_id, input_data.user_query)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

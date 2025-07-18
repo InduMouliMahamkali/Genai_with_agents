@@ -1,0 +1,8 @@
+New Employee Onboarding Guide
+
+1. Day 1: Welcome email and IT setup
+2. Day 2: Intro sessions with HR, Tech, and PM teams
+3. Week 1: Mandatory compliance and security training
+4. Week 2: Buddy assigned and role-specific mentoring begins
+5. Laptop, ID card, and system access are arranged by IT within 24 hours of joining
+6. Use the onboarding Slack channel for any help during your first month
