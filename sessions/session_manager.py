@@ -9,6 +9,7 @@ class SessionManager:
     def __init__(self):
         self.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
         self._create_tables()
+        self.sessions = {}
 
     def _create_tables(self):
         with self.conn:
@@ -38,3 +39,17 @@ class SessionManager:
             ORDER BY timestamp ASC
         """, (session_id,))
         return cursor.fetchall()
+    
+    def get_context(self, session_id: str) -> list:
+        return self.sessions.get(session_id, [])
+
+    def update_context(self, session_id: str, user_query: str, agent_response: str):
+        if session_id not in self.sessions:
+            self.sessions[session_id] = []
+        self.sessions[session_id].append({
+            "user": user_query,
+            "agent": agent_response
+        })
+
+    def reset_context(self, session_id: str):
+        self.sessions[session_id] = []

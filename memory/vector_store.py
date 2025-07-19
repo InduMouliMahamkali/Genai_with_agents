@@ -1,45 +1,46 @@
 # memory/vector_store.py
 
 import os
-import pickle
 import faiss
-import numpy as np
+import pickle
+from typing import List
 from sentence_transformers import SentenceTransformer
 
-DOC_DIR = "data/company_docs"
-INDEX_PATH = "data/faiss_index/common_agent.index"
-DOC_STORE_PATH = "data/faiss_index/documents.pkl"
+class VectorStore:
+    def __init__(self, index_path='data/faiss_index/index.faiss', meta_path='data/faiss_index/docs.pkl'):
+        self.index_path = index_path
+        self.meta_path = meta_path
+        self.embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+        self.index = None
+        self.metadata = []
 
-def load_documents():
-    documents = []
-    for filename in os.listdir(DOC_DIR):
-        if filename.endswith(".txt"):
-            with open(os.path.join(DOC_DIR, filename), "r", encoding="utf-8") as f:
-                content = f.read()
-                chunks = content.split("\n\n")  # Naive paragraph chunking
-                documents.extend([chunk.strip() for chunk in chunks if chunk.strip()])
-    return documents
+    def embed_text(self, texts: List[str]):
+        return self.embedding_model.encode(texts, show_progress_bar=False)
 
-def embed_and_index_documents():
-    print("📚 Loading and embedding documents...")
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+    def build_index(self, docs: List[str]):
+        vectors = self.embed_text(docs)
+        self.index = faiss.IndexFlatL2(vectors.shape[1])
+        self.index.add(vectors)
+        self.metadata = docs
+        self.save_index()
 
-    documents = load_documents()
-    embeddings = model.encode(documents, convert_to_numpy=True).astype("float32")
+    def save_index(self):
+        os.makedirs(os.path.dirname(self.index_path), exist_ok=True)
+        faiss.write_index(self.index, self.index_path)
+        with open(self.meta_path, 'wb') as f:
+            pickle.dump(self.metadata, f)
 
-    print(f"🔢 Total Chunks: {len(documents)}")
-    dim = embeddings.shape[1]
-    index = faiss.IndexFlatL2(dim)
-    index.add(embeddings)
+    def load_index(self):
+        if os.path.exists(self.index_path) and os.path.exists(self.meta_path):
+            self.index = faiss.read_index(self.index_path)
+            with open(self.meta_path, 'rb') as f:
+                self.metadata = pickle.load(f)
+            return True
+        return False
 
-    print("💾 Saving FAISS index and documents...")
-    os.makedirs(os.path.dirname(INDEX_PATH), exist_ok=True)
-    faiss.write_index(index, INDEX_PATH)
-
-    with open(DOC_STORE_PATH, "wb") as f:
-        pickle.dump(documents, f)
-
-    print("✅ Indexing Complete!")
-
-if __name__ == "__main__":
-    embed_and_index_documents()
+    def search(self, query: str, top_k: int = 3) -> List[str]:
+        if not self.index:
+            self.load_index()
+        query_vec = self.embed_text([query])
+        _, indices = self.index.search(query_vec, top_k)
+        return [self.metadata[i] for i in indices[0] if i < len(self.metadata)]

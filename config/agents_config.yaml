@@ -9,7 +9,13 @@
     #document_store_path: "data/faiss_index/documents.pkl"
 
 
-common_agent:
-  name: "CommonAgent"
-  index_path: "data/faiss_index/common_agent.index"
-  document_store_path: "data/faiss_index/documents.pkl"
+#common_agent:
+ # name: "CommonAgent"
+  #index_path: "data/faiss_index/common_agent.index"
+  #document_store_path: "data/faiss_index/documents.pkl"
+
+agents:
+  - name: common_agent
+    config:
+      greeting: "Hi, how can I help you today?"
+  - name: docs_agent

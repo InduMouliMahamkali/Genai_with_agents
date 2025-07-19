@@ -1,82 +1,41 @@
 # frontend/chat_ui.py
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import streamlit as st
-import requests
-from datetime import datetime
-from feedback.feedback_logger import FeedbackLogger
+from orchestrator.agent_orchestrator import AgentOrchestrator
 
-API_URL = "http://localhost:8000/ask"
-logger = FeedbackLogger()
+st.set_page_config(page_title="GenAI Agent App", layout="centered")
+st.title("🤖 GenAI Multi-Agent Chat")
 
-# Set page and title
-st.set_page_config(page_title="GenAI Chat", page_icon="💬")
-st.title("💬 Chat with GenAI Agent")
-st.markdown("Ask HR, onboarding, or general company questions.")
+# Initialize orchestrator and message state
+if "orchestrator" not in st.session_state:
+    st.session_state.orchestrator = AgentOrchestrator()
 
-# Session ID input
-if "session_id" not in st.session_state:
-    st.session_state.session_id = ""
-
-st.sidebar.header("Session Settings")
-session_id_input = st.sidebar.text_input("Session ID", value=st.session_state.session_id)
-
-if session_id_input:
-    st.session_state.session_id = session_id_input
-
-# Chat history
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 # Input field
-user_input = st.text_input("You:", key="input_box")
+user_input = st.text_input("Ask something...", key="input_box")
 
-# Send message
-if st.button("Send") and user_input and st.session_state.session_id:
-    payload = {
-        "session_id": st.session_state.session_id,
-        "user_input": user_input
-    }
+# Send button logic
+if st.button("Send") and user_input:
+    orchestrator = st.session_state.orchestrator
+    session_id = st.session_state.get("session_id", "default_user")
 
     try:
-        response = requests.post(API_URL, json=payload)
-        agent_reply = response.json().get("response", "⚠️ No reply from agent.")
+        response = orchestrator.route_query(session_id, user_input)
     except Exception as e:
-        agent_reply = f"❌ Error: {e}"
+        response = f"❌ Error: {str(e)}"
 
-    # Save to history
-    st.session_state.chat_history.append({
-        "timestamp": datetime.utcnow().isoformat(),
-        "user": user_input,
-        "agent": agent_reply
-    })
+    st.session_state.messages.append(("user", user_input))
+    st.session_state.messages.append(("agent", response))
 
-    # Clear input box
-    #st.session_state.input_box = ""
-    st.rerun()
-
-# Display chat with feedback
-for i, chat in enumerate(reversed(st.session_state.chat_history)):
-    st.markdown(f"👤 **You**: {chat['user']}")
-    st.markdown(f"🤖 **Agent**: {chat['agent']}")
-    
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button(f"👍 Helpful {i}", key=f"up_{i}"):
-            logger.log_feedback(
-                session_id=st.session_state.session_id,
-                user_input=chat['user'],
-                agent_response=chat['agent'],
-                rating="positive"
-            )
-            st.success("Feedback recorded: 👍")
-    with col2:
-        if st.button(f"👎 Not helpful {i}", key=f"down_{i}"):
-            logger.log_feedback(
-                session_id=st.session_state.session_id,
-                user_input=chat['user'],
-                agent_response=chat['agent'],
-                rating="negative"
-            )
-            st.success("Feedback recorded: 👎")
-
-    st.markdown("---")
+# Display messages
+for role, message in st.session_state.messages:
+    if role == "user":
+        st.markdown(f"🧑 **You:** {message}")
+    else:
+        st.markdown(f"🤖 **Agent:** {message}")

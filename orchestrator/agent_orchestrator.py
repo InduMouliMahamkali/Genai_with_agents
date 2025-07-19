@@ -1,44 +1,48 @@
 # orchestrator/agent_orchestrator.py
 
-from sessions.session_manager import SessionManager
+import yaml
 from agents.common_agent import CommonAgent
-from agents.devops_agent import DevOpsAgent
-from agents.itsm_agent import ITSMAgent
+from agents.docs_agent import DocsAgent
+from sessions.session_manager import SessionManager
+from sessions.interaction_logger import InteractionLogger
 
 class AgentOrchestrator:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, config_path="config/agents_config.yaml"):
         self.session_manager = SessionManager()
-        self.agents = self._initialize_agents()
+        self.interaction_logger = InteractionLogger()
+        self.agents = self.load_agents(config_path)
 
-    def _initialize_agents(self):
-        agents = {}
-        for agent_cfg in self.config.get("agents", []):
-            name = agent_cfg["name"]
-            if name == "common_agent":
-                agents[name] = CommonAgent(agent_cfg)
-            elif name == "itsm_agent":
-                agents[name] = ITSMAgent(agent_cfg)
-            elif name == "devops_agent":
-                agents[name] = DevOpsAgent(agent_cfg)
-            else:
-                print(f"⚠️ Unknown agent: {name}")
-        return agents
+    def load_agents(self, config_path):
+        with open(config_path, 'r') as file:
+            config = yaml.safe_load(file)
 
-    def process(self, session_id: str, user_query: str) -> str:
-        session_context = self.session_manager.get_context(session_id)
+        agent_instances = {}
+        for agent in config['agents']:
+            name = agent['name']
+            if name == 'common_agent':
+                agent_instances[name] = CommonAgent(config=agent.get("config", {}))
+            elif name == 'docs_agent':
+                agent_instances[name] = DocsAgent()
+            # Other agents can be added here
+        return agent_instances
 
-        # Basic routing logic based on keywords (can be replaced with intent detection)
-        if "incident" in user_query.lower() or "ticket" in user_query.lower():
-            agent = self.agents.get("itsm_agent")
-        elif "update db" in user_query.lower() or "airflow" in user_query.lower():
-            agent = self.agents.get("devops_agent")
+    def route_query(self, session_id: str, query: str) -> str:
+        # Simple keyword-based routing
+        query_lower = query.lower()
+        if any(keyword in query_lower for keyword in ['policy', 'benefits', 'leave', 'salary']):
+            agent_name = 'docs_agent'
         else:
-            agent = self.agents.get("common_agent")
+            agent_name = 'common_agent'
 
+        agent = self.agents.get(agent_name)
         if not agent:
             return "❌ No agent configured."
 
-        response = agent.respond(user_query, session_context)
-        self.session_manager.update_context(session_id, user_query, response)
-        return response
+        if hasattr(agent, "answer_query"):
+            response = agent.answer_query(query)
+        else:
+            response = agent.chat(query)
+
+        self.session_manager.update_context(session_id, query, response)
+        self.interaction_logger.log(session_id, query, response, agent_name)
+        return response, agent_name
