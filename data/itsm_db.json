@@ -1,0 +1,44 @@
+[
+  {
+    "id": "INC1001A",
+    "description": "Payment gateway is returning 500 errors for all transactions.",
+    "status": "Open",
+    "created_at": "2025-07-16 09:45:12",
+    "created_by": "alice"
+  },
+  {
+    "id": "INC1002B",
+    "description": "ServiceNow integration is down, incident data not syncing.",
+    "status": "In Progress",
+    "created_at": "2025-07-16 10:12:44",
+    "created_by": "bob"
+  },
+  {
+    "id": "INC1003C",
+    "description": "Customer dashboard is showing incorrect KPI metrics.",
+    "status": "Open",
+    "created_at": "2025-07-16 11:05:01",
+    "created_by": "carol"
+  },
+  {
+    "id": "INC1004D",
+    "description": "PostgreSQL ETL pipeline failed during batch job execution.",
+    "status": "Resolved",
+    "created_at": "2025-07-15 22:00:00",
+    "created_by": "david"
+  },
+  {
+    "id": "INC1005E",
+    "description": "Mobile app outage reported by monitoring system.",
+    "status": "Escalated",
+    "created_at": "2025-07-16 12:20:33",
+    "created_by": "emma"
+  },
+  {
+    "id": "INC6EA41F02",
+    "description": "Raise a ticket for VPN connectivity issue",
+    "status": "Open",
+    "created_at": "2025-07-19 15:56:05.366718",
+    "created_by": "anonymous"
+  }
+]

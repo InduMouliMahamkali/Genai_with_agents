@@ -18,4 +18,9 @@ agents:
   - name: common_agent
     config:
       greeting: "Hi, how can I help you today?"
+
   - name: docs_agent
+
+  - name: itsm_agent
+
+  - name: devops_agent
