@@ -1,6 +1,7 @@
 # orchestrator/agent_orchestrator.py
 
 import yaml
+import re
 from sessions.session_manager import SessionManager
 from sessions.interaction_logger import InteractionLogger
 
@@ -10,8 +11,8 @@ from agents.docs_agent import DocsAgent
 from agents.itsm_agent import ITSMAgent
 from agents.devops_agent import DevOpsAgent
 from agents.hr_agent import HRAgent
-#from agents.summarizer_agent import SummarizerAgent
-#from agents.multi_agent import MultiAgent
+from agents.summarizer_agent import SummarizerAgent
+from agents.multi_agent import MultiAgent
 
 
 class AgentOrchestrator:
@@ -27,7 +28,7 @@ class AgentOrchestrator:
         agent_instances = {}
         for agent in config.get('agents', []):
             name = agent['name']
-            agent_type = agent.get('type', name)  # fallback to name if type is not defined
+            agent_type = agent.get('type', name)
             agent_conf = agent.get('config', {})
 
             if agent_type == 'common':
@@ -45,14 +46,12 @@ class AgentOrchestrator:
             elif agent_type == 'hr':
                 agent_instances[name] = HRAgent(agent_id=name, config=agent_conf)
 
-            #elif agent_type == 'summarizer':
-             #   agent_instances[name] = SummarizerAgent(agent_id=name, config=agent_conf)
+            elif agent_type == 'summarizer':
+                agent_instances[name] = SummarizerAgent(agent_id=name, config=agent_conf)
 
-            #elif agent_type == 'multi':
-             #   agent_instances[name] = MultiAgent(agent_id=name, config=agent_conf)
-
-            else:
-                print(f"⚠️ Unknown agent type '{agent_type}' for '{name}' – skipping.")
+        # Important: Add MultiAgent last so it has access to all previous agents
+        if any(agent.get('type') == 'multi' for agent in config.get('agents', [])):
+            agent_instances["multi_agent"] = MultiAgent(agent_id="multi_agent", agents=agent_instances)
 
         return agent_instances
 
@@ -62,19 +61,21 @@ class AgentOrchestrator:
         # === Agent Routing Rules ===
 
         # ITSM Agent
-        itsm_keywords = ['incident', 'ticket', 'issue', 'servicenow', 'jira', 'status', 'outage', 'escalation', 'impact']
-        if any(kw in query_lower for kw in itsm_keywords):
+        itsm_keywords = ['incident', 'ticket', 'issue', 'servicenow', 'jira',
+                         'status', 'outage', 'escalation', 'impact', 'update', 'create', 'raise']
+        if re.search(r'\binc\d{3,8}\b', query_lower) or any(kw in query_lower for kw in itsm_keywords) or "inc" in query_lower:
             response = self.agents['itsm_agent'].answer_query(query, session_id=session_id)
             return self._log(session_id, query, response, "itsm_agent")
 
         # Docs Agent
-        doc_keywords = ['policy', 'document', 'handbook', 'guideline']
+        doc_keywords = ['policy', 'document', 'handbook', 'guideline', 'benefits', 'leave', 'salary', 'kpi',
+                        'mission', 'values', 'vision', 'code of conduct', 'hr policy']
         if any(kw in query_lower for kw in doc_keywords):
             response = self.agents['docs_agent'].answer_query(query)
             return self._log(session_id, query, response, "docs_agent")
 
         # DevOps Agent
-        devops_keywords = ['etl', 'pipeline', 'dashboard', 'sync db', 'kpi', 'metrics', 'refresh database']
+        devops_keywords = ['etl', 'pipeline', 'dashboard', 'sync db', 'metrics', 'refresh database']
         if any(kw in query_lower for kw in devops_keywords):
             response = self.agents['devops_agent'].answer_query(query)
             return self._log(session_id, query, response, "devops_agent")
@@ -86,14 +87,14 @@ class AgentOrchestrator:
             return self._log(session_id, query, response, "hr_agent")
 
         # Summarizer Agent
-        #if "summary" in query_lower or "summarize" in query_lower:
-         #   response = self.agents['summarizer_agent'].answer_query(query)
-          #  return self._log(session_id, query, response, "summarizer_agent")
+        if "summary" in query_lower or "summarize" in query_lower:
+            response = self.agents['summarizer_agent'].answer_query(query, session_id=session_id)
+            return self._log(session_id, query, response, "summarizer_agent")
 
-        # Multi Agent (composite)
-        #if "use multiple agents" in query_lower or "composite task" in query_lower:
-         #   response = self.agents['multi_agent'].answer_query(query, session_id=session_id)
-          #  return self._log(session_id, query, response, "multi_agent")
+        # Multi Agent (composite tasks)
+        if "use multiple agents" in query_lower or "composite task" in query_lower:
+            response = self.agents['multi_agent'].answer_query(query, session_id=session_id)
+            return self._log(session_id, query, response, "multi_agent")
 
         # Fallback to Common Agent
         response = self.agents['common_agent'].answer_query(query)

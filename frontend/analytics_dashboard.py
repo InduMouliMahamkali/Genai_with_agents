@@ -5,10 +5,6 @@ import pandas as pd
 import sqlite3
 import os
 
-st.set_page_config(page_title="📊 GenAI Analytics Dashboard", layout="wide")
-st.title("📊 GenAI Usage & Feedback Dashboard")
-
-# ---- Load Data ----
 INTERACTIONS_DB = "data/logs/interactions.db"
 FEEDBACK_DB = "data/feedback.db"
 
@@ -30,38 +26,41 @@ def load_feedback():
     conn.close()
     return df
 
-interactions = load_interactions()
-feedback = load_feedback()
+# ✅ Wrap everything in a function
+def show_dashboard():
+    st.subheader("📊 GenAI Usage & Feedback Dashboard")
 
-# ---- Metrics Row ----
-st.subheader("📌 Summary Metrics")
-col1, col2, col3 = st.columns(3)
+    interactions = load_interactions()
+    feedback = load_feedback()
 
-col1.metric("🧑 Unique Sessions", interactions['session_id'].nunique() if not interactions.empty else 0)
-col2.metric("💬 Total Questions", len(interactions))
-col3.metric("🤖 Agent Used", interactions['agent_id'].mode()[0] if not interactions.empty else "N/A")
+    # ---- Metrics Row ----
+    st.subheader("📌 Summary Metrics")
+    col1, col2, col3 = st.columns(3)
 
-# ---- Feedback Breakdown ----
-st.subheader("👍👎 Feedback Sentiment")
+    col1.metric("🧑 Unique Sessions", interactions['session_id'].nunique() if not interactions.empty else 0)
+    col2.metric("💬 Total Questions", len(interactions))
+    col3.metric("🤖 Agent Used", interactions['agent_id'].mode()[0] if not interactions.empty else "N/A")
 
-if feedback.empty:
-    st.info("No feedback available.")
-else:
-    sentiment_counts = feedback["rating"].value_counts().rename_axis("rating").reset_index(name="count")
-    st.bar_chart(sentiment_counts.set_index("rating"))
+    # ---- Feedback Breakdown ----
+    st.subheader("👍👎 Feedback Sentiment")
 
-# ---- Conversation Table ----
-st.subheader("🧾 Full Interaction Log")
+    if feedback.empty:
+        st.info("No feedback available.")
+    else:
+        sentiment_counts = feedback["rating"].value_counts().rename_axis("rating").reset_index(name="count")
+        st.bar_chart(sentiment_counts.set_index("rating"))
 
-if interactions.empty:
-    st.warning("No interactions found.")
-else:
-    st.dataframe(interactions.sort_values("timestamp", ascending=False), use_container_width=True)
+    # ---- Conversation Table ----
+    st.subheader("🧾 Full Interaction Log")
 
-# ---- Optional Filters ----
-st.markdown("🔍 **Filter by Session**")
-if not interactions.empty:
-    session_filter = st.selectbox("Select session ID", options=interactions["session_id"].unique())
-    filtered_df = interactions[interactions["session_id"] == session_filter]
-    st.write(f"Showing {len(filtered_df)} records for session `{session_filter}`")
-    st.dataframe(filtered_df, use_container_width=True)
+    if interactions.empty:
+        st.warning("No interactions found.")
+    else:
+        st.dataframe(interactions.sort_values("timestamp", ascending=False), use_container_width=True)
+
+        # ---- Optional Filters ----
+        st.markdown("🔍 **Filter by Session**")
+        session_filter = st.selectbox("Select session ID", options=interactions["session_id"].unique())
+        filtered_df = interactions[interactions["session_id"] == session_filter]
+        st.write(f"Showing {len(filtered_df)} records for session `{session_filter}`")
+        st.dataframe(filtered_df, use_container_width=True)

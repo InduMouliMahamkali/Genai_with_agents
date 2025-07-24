@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 CSV_LOG = "data/logs/interactions.csv"
-DB_PATH = "data/logs/interactions.db"
+DB_PATH = "data/sessions.db"
 
 class InteractionLogger:
     def __init__(self):

@@ -8,7 +8,8 @@ from datetime import datetime
 TICKET_DB_PATH = "data/itsm_db.json"
 
 class ITSMAgent:
-    def __init__(self):
+    def __init__(self, config=None):
+        self.config = config or {}
         if not os.path.exists(TICKET_DB_PATH):
             with open(TICKET_DB_PATH, 'w') as f:
                 json.dump([], f)
@@ -60,26 +61,34 @@ class ITSMAgent:
                 return f"✅ Ticket `{ticket_id}` updated to status: `{status}`"
         return f"❌ No ticket found with ID `{ticket_id}`."
 
-    def answer_query(self, query: str):
+    def answer_query(self, query: str, session_id=None):
         q = query.lower()
 
+        # Ticket creation
         if "create" in q or "raise" in q:
-            return self.create_ticket(description=query)
+            return self.create_ticket(description=query, user=session_id or "anonymous")
 
+        # Get ticket status
         elif "status of" in q or "check ticket" in q:
             words = q.split()
             for word in words:
                 if word.startswith("inc"):
                     return self.get_ticket(word)
 
-        elif "open tickets" in q or "show incidents" in q:
+        # Show open incidents/tickets
+        elif any(kw in q for kw in [
+            "open tickets", "show incidents", "open issues", 
+            "currently open issues", "active tickets", "active incidents"
+        ]):
             return self.list_open_tickets()
 
+        # Ticket update (e.g. "update INC1234 to Closed")
         elif "update" in q:
-            # crude parser: "update INC1234 to closed"
             parts = q.split()
             ticket_id = next((p for p in parts if p.startswith("inc")), None)
-            status = parts[-1].capitalize()
-            return self.update_ticket(ticket_id, status)
+            status = parts[-1].capitalize() if parts else "Closed"
+            if ticket_id:
+                return self.update_ticket(ticket_id, status)
+            return "❗ Ticket ID not found in update request."
 
         return "❓ Sorry, I couldn’t understand your ITSM query."

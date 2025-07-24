@@ -39,6 +39,11 @@ agents:
 
   - name: devops_agent
     type: devops
+    config:
+      etl_script: "scripts/run_etl.py"
+      db_sync_script: "scripts/db_sync.py"
+      dashboard_script: "scripts/update_dashboard.py"
+      kpi_path: "data/kpi_report.json"
 
   - name: hr_agent
     type: hr

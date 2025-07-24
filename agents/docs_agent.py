@@ -3,7 +3,9 @@
 from memory.vector_store import VectorStore
 
 class DocsAgent:
-    def __init__(self):
+    def __init__(self, agent_id="docs_agent", config=None):
+        self.agent_id = agent_id
+        self.config = config or {}
         self.vector_store = VectorStore()
         if not self.vector_store.load_index():
             raise RuntimeError("❌ FAISS index not found. Please run embedder.py first.")
@@ -12,7 +14,7 @@ class DocsAgent:
         relevant_chunks = self.vector_store.search(query, top_k=3)
 
         if not relevant_chunks:
-            return "I couldn't find anything relevant in the documentation."
+            return "📄 I couldn't find anything relevant in the documentation."
 
         context = "\n---\n".join(relevant_chunks)
         response = self._summarize(query, context)
@@ -20,7 +22,6 @@ class DocsAgent:
 
     def _summarize(self, query: str, context: str) -> str:
         """
-        Simple response synthesis using heuristics or a basic prompt.
-        You can replace this with OpenAI or another model in Phase 4.
+        Basic synthesis response — upgradeable in Phase 4 to LLM-based summarization.
         """
-        return f"Based on internal documents, here's what I found:\n\n{context}"
+        return f"📄 Based on internal documents, here's what I found:\n\n{context}"

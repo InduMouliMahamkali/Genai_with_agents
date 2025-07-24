@@ -40,6 +40,23 @@ class SessionManager:
         """, (session_id,))
         return cursor.fetchall()
     
+    def get_session_history(self, session_id: str, limit: int = 20):
+        """
+        Returns a list of (user_input, agent_response) tuples for the given session,
+        most recent first, limited to the last `limit` interactions.
+        """
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT user_input, agent_response
+            FROM interactions
+            WHERE session_id = ?
+            ORDER BY timestamp DESC
+            LIMIT ?
+        """, (session_id, limit))
+        return cursor.fetchall()[::-1]  # reverse to keep chronological order
+
+
+    
     def get_context(self, session_id: str) -> list:
         return self.sessions.get(session_id, [])
 
