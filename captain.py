@@ -10,7 +10,7 @@ import os
 app = FastAPI(
     title="GenAI Agent App",
     description="Multi-Agent Orchestrator for Enterprise GenAI",
-    version="1.0.0"
+    version="3.4.0"
 )
 
 # Load configuration

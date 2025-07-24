@@ -14,13 +14,38 @@
   #index_path: "data/faiss_index/common_agent.index"
   #document_store_path: "data/faiss_index/documents.pkl"
 
+#agents:
+ # - name: common_agent
+  #  config:
+   #   greeting: "Hi, how can I help you today?"
+
+  #- name: docs_agent
+
+  #- name: itsm_agent
+
+ # - name: devops_agent
+
 agents:
   - name: common_agent
+    type: common
     config:
       greeting: "Hi, how can I help you today?"
 
   - name: docs_agent
+    type: docs
 
   - name: itsm_agent
+    type: itsm
 
   - name: devops_agent
+    type: devops
+
+  - name: hr_agent
+    type: hr
+
+  - name: summarizer_agent
+    type: summarizer
+
+  - name: multi_agent
+    type: multi
+

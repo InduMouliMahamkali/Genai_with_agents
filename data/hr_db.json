@@ -1,0 +1,24 @@
+{
+  "emp001": {
+    "name": "John Doe",
+    "leaves": {
+      "total": 25,
+      "used": 18,
+      "remaining": 7
+    },
+    "salary": "$100,000",
+    "last_appraisal": "Exceeds Expectations",
+    "holiday_list": ["2025-01-26", "2025-08-15", "2025-10-02"]
+  },
+  "emp002": {
+    "name": "Jane Smith",
+    "leaves": {
+      "total": 25,
+      "used": 10,
+      "remaining": 15
+    },
+    "salary": "$85,000",
+    "last_appraisal": "Meets Expectations",
+    "holiday_list": ["2025-01-26", "2025-08-15", "2025-12-25"]
+  }
+}
