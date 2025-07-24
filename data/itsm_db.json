@@ -138,5 +138,40 @@
     "status": "Open",
     "created_at": "2025-07-24 19:39:16.322566",
     "created_by": "user_b692f07a"
+  },
+  {
+    "id": "INC6DD5CAFA",
+    "description": "create a ticket for vpn issue",
+    "status": "Etl.",
+    "created_at": "2025-07-24 19:50:11.246019",
+    "created_by": "user_b4210aff"
+  },
+  {
+    "id": "INC894C6A7B",
+    "description": "create ticket for db login issue",
+    "status": "Pipeline.",
+    "created_at": "2025-07-24 20:02:03.341053",
+    "created_by": "user_cda9b819"
+  },
+  {
+    "id": "INC51E3358D",
+    "description": "create ticket for etl pipeline failure",
+    "status": "Pipeline.",
+    "created_at": "2025-07-24 20:09:44.875292",
+    "created_by": "user_56e7d2cc"
+  },
+  {
+    "id": "INC9C8CB163",
+    "description": "create ticket for etl pipeline failure",
+    "status": "Pipeline.",
+    "created_at": "2025-07-24 20:16:05.351663",
+    "created_by": "user_1dd4219b"
+  },
+  {
+    "id": "INC4C3DB26E",
+    "description": "create ticket for etl pipeline failure",
+    "status": "Closed",
+    "created_at": "2025-07-24 20:25:13.345210",
+    "created_by": "user_008bcadd"
   }
 ]

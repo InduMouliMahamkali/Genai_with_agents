@@ -1,40 +1,59 @@
-# agents/multi_agent.py
+import re
 
 class MultiAgent:
     def __init__(self, agent_id="multi_agent", config=None, agents=None):
         self.agent_id = agent_id
         self.config = config or {}
-        self.agents = agents or {}
+
+        # Injected agents from orchestrator (preferred) or fallback to direct init
+        if agents:
+            self.itsm_agent = agents.get("itsm_agent")
+            self.devops_agent = agents.get("devops_agent")
+            self.docs_agent = agents.get("docs_agent")
+            self.hr_agent = agents.get("hr_agent")
+        else:
+            from agents.itsm_agent import ITSMAgent
+            from agents.devops_agent import DevOpsAgent
+            from agents.docs_agent import DocsAgent
+            from agents.hr_agent import HRAgent
+
+            self.itsm_agent = ITSMAgent()
+            self.devops_agent = DevOpsAgent()
+            self.docs_agent = DocsAgent()
+            self.hr_agent = HRAgent(agent_id="hr_agent", config={})
 
     def answer_query(self, query, session_id=None):
         query_lower = query.lower()
         response_parts = []
 
-        # ITSM
-        if "ticket" in query_lower or "incident" in query_lower or "jira" in query_lower:
-            itsm = self.agents.get("itsm_agent")
-            if itsm:
-                response_parts.append("🛠️ Ticket Info:\n" + itsm.answer_query(query, session_id=session_id))
+        # Split query into logical sub-tasks
+        tasks = re.split(r'\band\b|[.,]', query_lower)
 
-        # DevOps
-        if any(kw in query_lower for kw in ["etl", "dashboard", "pipeline", "kpi"]):
-            devops = self.agents.get("devops_agent")
-            if devops:
-                response_parts.append("⚙️ DevOps Action:\n" + devops.answer_query(query))
+        for task in tasks:
+            task = task.strip()
+            if not task:
+                continue
 
-        # Docs
-        if any(kw in query_lower for kw in ["policy", "handbook", "mission", "values", "document"]):
-            docs = self.agents.get("docs_agent")
-            if docs:
-                response_parts.append("📄 Policy Doc:\n" + docs.answer_query(query))
+            # Route to ITSM agent
+            if any(kw in task for kw in ['ticket', 'incident', 'update', 'inc']):
+                resp = self.itsm_agent.answer_query(task, session_id=session_id)
+                response_parts.append("🛠️ Ticket Info:\n" + resp)
 
-        # HR
-        if any(kw in query_lower for kw in ["salary", "leave", "holiday", "appraisal", "pay"]):
-            hr = self.agents.get("hr_agent")
-            if hr:
-                response_parts.append("👤 HR Info:\n" + hr.answer_query(query, session_id=session_id))
+            # Route to DevOps agent
+            elif any(kw in task for kw in ['etl', 'pipeline', 'dashboard']):
+                resp = self.devops_agent.answer_query(task)
+                response_parts.append("⚙️ DevOps Action:\n" + resp)
 
-        # If no match
+            # Route to Docs agent
+            elif any(kw in task for kw in ['policy', 'handbook', 'document']):
+                resp = self.docs_agent.answer_query(task)
+                response_parts.append("📄 Policy Doc:\n" + resp)
+
+            # Route to HR agent
+            elif any(kw in task for kw in ['leave', 'salary', 'holiday']):
+                resp = self.hr_agent.answer_query(task, session_id=session_id)
+                response_parts.append("👤 HR Info:\n" + resp)
+
         if not response_parts:
             return "🤖 I couldn’t match this to any known combined task."
 

@@ -58,12 +58,18 @@ class AgentOrchestrator:
     def route_query(self, session_id, query):
         query_lower = query.lower()
 
-        # === Agent Routing Rules ===
+        # === First: Check if it's a composite task for multi-agent ===
+        multi_keywords = [' and ', '.', ',', 'run', 'update', 'show', 'multiple agents', 'composite task']
+        if any(kw in query_lower for kw in multi_keywords):
+            response = self.agents['multi_agent'].answer_query(query, session_id=session_id)
+            return self._log(session_id, query, response, "multi_agent")
+
+        # === Then: Route to specialized agents ===
 
         # ITSM Agent
         itsm_keywords = ['incident', 'ticket', 'issue', 'servicenow', 'jira',
-                         'status', 'outage', 'escalation', 'impact', 'update', 'create', 'raise']
-        if re.search(r'\binc\d{3,8}\b', query_lower) or any(kw in query_lower for kw in itsm_keywords) or "inc" in query_lower:
+                        'status', 'outage', 'escalation', 'impact', 'update', 'create', 'raise']
+        if re.search(r'\binc\d{3,8}\b', query_lower) or any(kw in query_lower for kw in itsm_keywords):
             response = self.agents['itsm_agent'].answer_query(query, session_id=session_id)
             return self._log(session_id, query, response, "itsm_agent")
 
@@ -91,14 +97,10 @@ class AgentOrchestrator:
             response = self.agents['summarizer_agent'].answer_query(query, session_id=session_id)
             return self._log(session_id, query, response, "summarizer_agent")
 
-        # Multi Agent (composite tasks)
-        if "use multiple agents" in query_lower or "composite task" in query_lower:
-            response = self.agents['multi_agent'].answer_query(query, session_id=session_id)
-            return self._log(session_id, query, response, "multi_agent")
-
         # Fallback to Common Agent
         response = self.agents['common_agent'].answer_query(query)
         return self._log(session_id, query, response, "common_agent")
+
 
     def _log(self, session_id, query, response, agent_id):
         self.session_manager.update_context(session_id, query, response)
