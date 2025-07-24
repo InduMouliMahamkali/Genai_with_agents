@@ -3,6 +3,7 @@
 import subprocess
 import json
 import os
+from caching.cache_decorator import cache_response
 
 class DevOpsAgent:
     def __init__(self, agent_id="devops_agent", config=None):
@@ -43,6 +44,7 @@ class DevOpsAgent:
             response += f"- {key}: {value}\n"
         return response
 
+    @cache_response(ttl=600)
     def answer_query(self, query):
         query_lower = query.lower()
 

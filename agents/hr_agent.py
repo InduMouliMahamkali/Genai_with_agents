@@ -1,4 +1,6 @@
 import json
+from caching.cache_decorator import cache_response
+
 
 class HRAgent:
     def __init__(self, agent_id, config):
@@ -7,6 +9,7 @@ class HRAgent:
         with open("data/hr_db.json", "r") as f:
             self.hr_data = json.load(f)
 
+    @cache_response(ttl=600)
     def answer_query(self, query, session_id=None):
         if not session_id or session_id not in self.hr_data:
             return "⚠️ Unauthorized or unknown employee. Please log in."

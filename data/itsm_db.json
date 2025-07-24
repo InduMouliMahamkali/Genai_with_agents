@@ -173,5 +173,12 @@
     "status": "Closed",
     "created_at": "2025-07-24 20:25:13.345210",
     "created_by": "user_008bcadd"
+  },
+  {
+    "id": "INC05F08409",
+    "description": "create ticket for etl pipeline failure",
+    "status": "Open",
+    "created_at": "2025-07-24 15:22:22.717471",
+    "created_by": "user_bf69b524"
   }
 ]

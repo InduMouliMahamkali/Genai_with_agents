@@ -6,6 +6,7 @@ services:
     ports:
       - "8000:8000"               # Backend API
       - "8501:8501"               # Streamlit UI
+  #    - "6380:6379"               # Redis (alternative port)
     volumes:
       - .:/app                    # Mount current code folder inside container
     environment:

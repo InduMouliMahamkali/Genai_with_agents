@@ -4,6 +4,7 @@ import json
 import os
 import uuid
 from datetime import datetime
+from caching.cache_decorator import cache_response
 
 TICKET_DB_PATH = "data/itsm_db.json"
 
@@ -61,6 +62,7 @@ class ITSMAgent:
                 return f"✅ Ticket `{ticket_id}` updated to status: `{status}`"
         return f"❌ No ticket found with ID `{ticket_id}`."
 
+    @cache_response(ttl=600)
     def answer_query(self, query: str, session_id=None):
         q = query.lower()
 

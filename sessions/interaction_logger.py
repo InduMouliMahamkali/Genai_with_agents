@@ -50,3 +50,10 @@ class InteractionLogger:
             pd.DataFrame([entry]).to_csv(CSV_LOG, index=False)
         else:
             pd.DataFrame([entry]).to_csv(CSV_LOG, mode="a", header=False, index=False)
+
+    def log_feedback(self, session_id, query, feedback_score, comment):
+        with self.conn:
+            self.conn.execute("""
+                INSERT INTO feedback (session_id, query, feedback_score, comment, timestamp)
+                VALUES (?, ?, ?, ?, ?)
+            """, (session_id, query, feedback_score, comment, datetime.utcnow().isoformat()))

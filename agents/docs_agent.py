@@ -1,6 +1,7 @@
 # agents/docs_agent.py
 
 from memory.vector_store import VectorStore
+from caching.cache_decorator import cache_response
 
 class DocsAgent:
     def __init__(self, agent_id="docs_agent", config=None):
@@ -10,6 +11,8 @@ class DocsAgent:
         if not self.vector_store.load_index():
             raise RuntimeError("❌ FAISS index not found. Please run embedder.py first.")
 
+
+    @cache_response(ttl=600)
     def answer_query(self, query: str) -> str:
         relevant_chunks = self.vector_store.search(query, top_k=3)
 

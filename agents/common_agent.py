@@ -6,9 +6,12 @@ import faiss
 import os
 import numpy as np
 import pickle
+from caching.cache_manager import CacheManager  # 🔁 Redis Cache
+from caching.cache_decorator import cache_response  # 🧠 Shared caching decorator
+
 
 class CommonAgent(BaseAgent):
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, cache_manager: CacheManager = None):
         super().__init__(config)
         self.model = SentenceTransformer("all-MiniLM-L6-v2")
         self.index_path = "data/faiss_index/common_agent.index"
@@ -16,6 +19,7 @@ class CommonAgent(BaseAgent):
         self.greeting = config.get("greeting", "Hello! How can I assist you today?")
         self.index = None
         self.documents = []
+        self.cache = cache_manager or CacheManager()  # 🧠 Use Redis if available
         self.load_resources()
 
     def load_resources(self):
@@ -40,6 +44,7 @@ class CommonAgent(BaseAgent):
         result = self.documents[I[0][0]]
         return f"📄 Most relevant info:\n\n{result}"
 
+    @cache_response(ttl=600)
     def answer_query(self, query: str) -> str:
         query = query.lower()
 
@@ -54,5 +59,13 @@ class CommonAgent(BaseAgent):
                 "- 🛠️ Running ETL or DB jobs\n"
                 "- 📊 KPIs & Dashboards"
             )
+
+        if self.index:
+            query_embedding = self.model.encode([query])
+            D, I = self.index.search(np.array(query_embedding).astype("float32"), k=1)
+
+            if I[0][0] >= 0:
+                result = f"📄 Most relevant info:\n\n{self.documents[I[0][0]]}"
+                return result
 
         return "🤖 I'm a general assistant. Try asking about tickets, policies, or development tasks."
