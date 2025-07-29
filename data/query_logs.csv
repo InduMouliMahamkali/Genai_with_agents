@@ -1,0 +1,13 @@
+timestamp,session_id,agent,query,response,feedback
+2025-07-29T19:26:37.543536,user_27518e98,docs_agent,what is the leave policy,"📄 Based on internal documents, here's what I found:
+
+Company Leave Policy
+
+1. Employees are entitled to 20 paid leaves per year. 2. Leaves can be carried forward up to 5 days into the next year. 3. Sick leave does not require manager approval for up to 2 consecutive days. 4. For planned vacation leaves, prior approval from the reporting manager is required. 5. Maternity leave: 6 months | Paternity leave: 15 days
+6. Leaves can be applied via the HR portal or email to hr@company.com.
+---
+Welcome to the company! This handbook is designed to help you understand our culture, policies, and expectations. - **Work Hours**: Standard work hours are 9:00 AM to 6:00 PM IST, Monday to Friday. - **Leave Policy**: Full-time employees are entitled to 24 annual leave days, in addition to national holidays. - **Remote Work**: We support hybrid and remote work. Coordinate with your manager for regular check-ins and task tracking.
+---
+Work From Home Guidelines
+
+1. Employees can work from home up to 2 days per week. 2. Prior approval from the team manager is mandatory. 3. Full-time WFH requests must be routed through HR and approved by Department Heads. 4. Employees must be reachable during working hours on Teams or Slack. 5. VPN usage is mandatory for accessing internal tools.",

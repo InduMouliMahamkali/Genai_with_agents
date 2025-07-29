@@ -5,7 +5,7 @@ import json
 import time
 
 class CacheManager:
-    def __init__(self, host='localhost', port=6380, db=0, ttl_seconds=3600):
+    def __init__(self, host='host.docker.internal', port=6380, db=0, ttl_seconds=3600):
         self.redis = redis.StrictRedis(
             host=os.getenv("REDIS_HOST", host),
             port=int(os.getenv("REDIS_PORT", port)),

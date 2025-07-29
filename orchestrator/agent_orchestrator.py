@@ -4,6 +4,7 @@ import yaml
 import re
 from sessions.session_manager import SessionManager
 from sessions.interaction_logger import InteractionLogger
+from loggingg.query_logger import QueryLogger  # ✅ NEW
 
 # importing all agents
 from agents.common_agent import CommonAgent
@@ -19,6 +20,7 @@ class AgentOrchestrator:
     def __init__(self, config_path="config/agents_config.yaml"):
         self.session_manager = SessionManager()
         self.logger = InteractionLogger()
+        self.query_logger = QueryLogger()  # ✅ NEW
         self.agents = self.load_agents(config_path)
 
     def load_agents(self, config_path):
@@ -101,8 +103,19 @@ class AgentOrchestrator:
         response = self.agents['common_agent'].answer_query(query)
         return self._log(session_id, query, response, "common_agent")
 
-
     def _log(self, session_id, query, response, agent_id):
+        # Session context logging
         self.session_manager.update_context(session_id, query, response)
+
+        # Session-based interaction log (JSON)
         self.logger.log(session_id, query, response, agent_id=agent_id)
+
+        # CSV dashboard log (analytics)
+        self.query_logger.log_query(
+            session_id=session_id,
+            agent=agent_id,
+            query=query,
+            response=response,
+            feedback=""  # UI feedback to be added later
+        )
         return response
